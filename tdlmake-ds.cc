@@ -18,13 +18,9 @@
 
 #if defined (WIN32)
 static const char log_filename[] = "v:/tmp/log.txt";
-static const char org_filename[] = "w:/dsprog45/bin/tdlmake-org.exe";
-static const char tmp_filename[] = "v:/tmp/";
 static const char dat_filename[] = "v:/tmp/gamma.txt";
 #else
 static const char log_filename[] = "log.txt";
-static const char org_filename[] = "tdlmake";
-static const char tmp_filename[] = "./";
 static const char dat_filename[] = "gamma.txt";
 #endif
 
