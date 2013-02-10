@@ -7,7 +7,6 @@
 #include <fstream>
 #include <vector>
 #include <list>
-#include <cstring>
 #include <cstdlib>
 #include <string>
 #include <iomanip>
@@ -106,6 +105,9 @@ static const argument_count_rec argument_counts[] = {
   { "-pixelaspectratio", 1 },
   { "-imageaspectratio", 1 },
 };
+/**
+ * return the number of arguments for that specific option.
+ */
 static int get_number_of_arguments (const std::string &opt)
 {
   unsigned counti = 0;
@@ -119,6 +121,9 @@ static int get_number_of_arguments (const std::string &opt)
   return 0;
 }
 
+/**
+ * convert the argc/argv list into a string list.
+ */
 static string_list get_all_args (int argc, char **argv)
 {
   string_list args;
@@ -130,6 +135,9 @@ static string_list get_all_args (int argc, char **argv)
   return args;
 }
 
+/**
+ * get the parameters (filename arguments), ie parameters without options.
+ */
 static string_list get_parameters (const string_list &args)
 {
   string_list params;
@@ -145,6 +153,9 @@ static string_list get_parameters (const string_list &args)
   return params;
 }
 
+/**
+ * insert the gamma option in front of the string list.
+ */
 static void insert_gamma_option (float gamma, string_list &args)
 {
   {
@@ -155,10 +166,15 @@ static void insert_gamma_option (float gamma, string_list &args)
   args.push_front ("-gamma");
 }
 
-static std::string build_command_line (const string_list &args)
+/**
+ * convert the list of strings into a shell command line for
+ * use with the system() function.
+ */
+static std::string build_command_line
+  (const std::string &command, const string_list &args)
 {
   std::ostringstream oss;
-  oss << org_filename;
+  oss << command;
   string_list::const_iterator it = args.begin ();
   while (it != args.end ()) {
     oss << " " << '"' << *it << '"';
@@ -167,10 +183,29 @@ static std::string build_command_line (const string_list &args)
   return oss.str ();
 }
 
+/**
+ * execute the command line.
+ */
 static int execute_tdlmake (const std::string &cmdline)
 {
   int ec = system (cmdline.c_str ());
   return ec;
+}
+
+/**
+ * get the original filename for the program.
+ */
+static std::string get_original_command (const std::string &self)
+{
+  std::string::size_type lasts = self.rfind ('/');
+  if (lasts == self.npos) {
+    /*
+     * no directory name....
+     */
+    return "tdlmake-org";
+  } else {
+    return self.substr (0, lasts + 1) + "tdlmake-org";
+  }
 }
 
 int main (int argc, char **argv)
@@ -179,6 +214,7 @@ int main (int argc, char **argv)
    * command to create and execute.
    */
   std::ofstream log (log_filename, std::ios::out | std::ios::app);
+  const std::string tdlmake_path = get_original_command (argv[0]);
   string_list args (get_all_args (argc, argv));
   if (!has_gamma_option (args)) {
     log << "no gamma option present.\n";
@@ -193,7 +229,7 @@ int main (int argc, char **argv)
       insert_gamma_option (gamma, args);
     }
   }
-  const std::string cmdline = build_command_line (args);
+  const std::string cmdline = build_command_line (tdlmake_path, args);
   log << "command: " << cmdline << '\n';
 #if defined (TEST)
   std::cout << "EXEC: " << cmdline << '\n';
