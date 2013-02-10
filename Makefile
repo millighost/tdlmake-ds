@@ -2,7 +2,7 @@
 # set path=%path%;v:/mingw/bin
 # mingw32-make
 
-SRCS = tdlmake-ds.cc pattern.cc
+SRCS = tdlmake-ds.cc pattern.cc sysdep.cc
 OBJS = $(SRCS:.cc=.o)
 LDFLAGS = -static-libstdc++ -static-libgcc
 CXXFLAGS = -O -Wall

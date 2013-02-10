@@ -2,6 +2,7 @@
  * replacement program for tdlmake.
  */
 #include "pattern.hh"
+#include "sysdep.hh"
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -11,18 +12,6 @@
 #include <string>
 #include <iomanip>
 #include <sstream>
-
-#if defined (WIN32)
-#  include <windows.h>
-#endif
-
-#if defined (WIN32)
-static const char log_filename[] = "v:/tmp/log.txt";
-static const char dat_filename[] = "v:/tmp/gamma.txt";
-#else
-static const char log_filename[] = "log.txt";
-static const char dat_filename[] = "gamma.txt";
-#endif
 
 /*
  * set path=%path%;v:/mingw/bin
@@ -41,7 +30,7 @@ typedef std::list <std::string> string_list;
 static float get_gamma_for (const std::string &filename)
 {
   lc_path path (filename);
-  std::ifstream ifs (dat_filename, std::ios::in);
+  std::ifstream ifs (get_path_datafile ().c_str (), std::ios::in);
   char buffer[1000];
   while (ifs.getline (buffer, sizeof buffer)) {
     std::string line (buffer, ifs.gcount () - 1);
@@ -188,29 +177,14 @@ static int execute_tdlmake (const std::string &cmdline)
   return ec;
 }
 
-/**
- * get the original filename for the program.
- */
-static std::string get_original_command (const std::string &self)
-{
-  std::string::size_type lasts = self.rfind ('/');
-  if (lasts == self.npos) {
-    /*
-     * no directory name....
-     */
-    return "tdlmake-org";
-  } else {
-    return self.substr (0, lasts + 1) + "tdlmake-org";
-  }
-}
-
 int main (int argc, char **argv)
 {
   /*
    * command to create and execute.
    */
-  std::ofstream log (log_filename, std::ios::out | std::ios::app);
-  const std::string tdlmake_path = get_original_command (argv[0]);
+  std::ofstream log
+    (get_path_logfile ().c_str (), std::ios::out | std::ios::app);
+  const std::string tdlmake_path = get_path_tdlmake (argv[0]);
   string_list args (get_all_args (argc, argv));
   if (!has_gamma_option (args)) {
     log << "no gamma option present.\n";
