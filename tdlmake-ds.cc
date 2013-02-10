@@ -45,7 +45,6 @@ typedef std::list <std::string> string_list;
  */
 static float get_gamma_for (const std::string &filename)
 {
-  std::cout << "get_gamma_for:" << filename << '\n';
   lc_path path (filename);
   std::ifstream ifs (dat_filename, std::ios::in);
   char buffer[1000];
@@ -59,7 +58,6 @@ static float get_gamma_for (const std::string &filename)
         = path_pattern.find_last_not_of ("\t\r\n ");
       if (last_char != path_pattern.npos) {
         path_pattern.resize (last_char + 1);
-        std::cout << "match against '" << path_pattern << "'\n";
         if (path.match (path_pattern)) {
           return gamma;
         }

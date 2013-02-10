@@ -1,4 +1,5 @@
 #include "pattern.hh"
+#include <iostream>
 
 namespace {
 static string_vec split_path (const std::string &str)
@@ -60,7 +61,6 @@ bool lc_path::match (const std::string &patterns) const
   pattern.init_state (state);
   int pos = m_comp.size () - 1;
   while (pos >= 0 && !state.empty ()) {
-    std::cout << "state: " << state << " shift='" << m_comp[pos] << "'\n";
     state_set::const_iterator stit = state.begin ();
     while (stit != state.end ()) {
       if (pattern.shift (*stit, m_comp[pos], newstate)) {
@@ -90,7 +90,7 @@ void pattern_state::init_state (state_set &state) const
 bool pattern_state::match1 (int idx, const std::string &subj) const
 {
   const std::string &pattern = m_comp[idx];
-  if (pattern.find ('*')) {
+  if (pattern.find ('*') != pattern.npos) {
     /*
      * complex case: pattern contains a wildcard.
      */
