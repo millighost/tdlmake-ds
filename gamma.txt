@@ -1,0 +1,8 @@
+-- fully specified path:
+1.1      w:/dsdata45/Runtime/Textures/3DUniverse/Genesis/Sadie/1_3duGenesisSadie_d.jpg
+-- trailing path only
+1.2      3DUniverse/Genesis/Sadie/2_3duGenesisSadie_d.jpg
+-- wildcard in path
+1.3      3DUniverse/Genesis/Sadie/*Bump.jpg
+-- intermediate wildcard
+1.4      3DUniverse//*Bump.jpg

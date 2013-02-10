@@ -2,6 +2,7 @@
  * replacement program for tdlmake.
  */
 #include "pattern.hh"
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -39,11 +40,6 @@ static const char dat_filename[] = "gamma.txt";
 
 typedef std::list <std::string> string_list;
 
-static bool filename_matches
-  (const std::string &filename, const std::string &pattern)
-{
-  return false;
-}
 /**
  * function to determine the gamma for an image.
  */
@@ -51,18 +47,19 @@ static float get_gamma_for (const std::string &filename)
 {
   std::cout << "get_gamma_for:" << filename << '\n';
   lc_path path (filename);
-  std::ifstream ifs ("dat.txt", std::ios::in);
+  std::ifstream ifs (dat_filename, std::ios::in);
   char buffer[1000];
   while (ifs.getline (buffer, sizeof buffer)) {
     std::string line (buffer, ifs.gcount () - 1);
     std::istringstream iss (line);
     float gamma;
-    if (iss >> gamma >> std::ws && iss.tellg () < line.size ()) {
+    if (iss >> gamma >> std::ws && (size_t) iss.tellg () < line.size ()) {
       std::string path_pattern (line.substr (iss.tellg ()));
       std::string::size_type last_char
         = path_pattern.find_last_not_of ("\t\r\n ");
       if (last_char != path_pattern.npos) {
         path_pattern.resize (last_char + 1);
+        std::cout << "match against '" << path_pattern << "'\n";
         if (path.match (path_pattern)) {
           return gamma;
         }
@@ -75,38 +72,13 @@ static float get_gamma_for (const std::string &filename)
 /**
  * return true, iff the options already hold some gamma parameter.
  */
-static bool has_gamma_option (int argc, char **argv)
+static bool has_gamma_option (const string_list &args)
 {
-  int idx = 1;
-  while (idx < argc) {
-    if (strcasecmp (argv[idx], "-gamma") == 0
-      || strcasecmp (argv[idx], "-rgbagamma") == 0) {
-      return true;
-    } else {
-      ++ idx;
-    }
-  }
-  return false;
-}
-
-/*
- * copy a file.
- */
-static void copy_file (const std::string &in, const std::string &out)
-{
-  std::ifstream ifs (in.c_str (), std::ios::binary);
-  std::ofstream ofs (out.c_str (), std::ios::binary);
-  char buffer[20000];
-  while (ifs.read (buffer, sizeof buffer)) {
-    ofs.write (buffer, ifs.gcount ());
-  }
-  ofs.write (buffer, ifs.gcount ());
-  ifs.close ();
-  ofs.close ();
-}
-static void make_backup_copy (const std::string &in)
-{
-  static int count = 0;
+  string_list::const_iterator begin = args.begin ();
+  return std::find (args.begin (), args.end (), std::string ("-gamma"))
+    != args.end ()
+  || std::find (args.begin (), args.end (), std::string ("-rgbagamma"))
+    != args.end ();
 }
 
 struct argument_count_rec {
@@ -175,7 +147,6 @@ static string_list get_parameters (const string_list &args)
   return params;
 }
 
-
 static void insert_gamma_option (float gamma, string_list &args)
 {
   {
@@ -206,20 +177,31 @@ static int execute_tdlmake (const std::string &cmdline)
 
 int main (int argc, char **argv)
 {
+  /*
+   * command to create and execute.
+   */
   std::ofstream log (log_filename, std::ios::out | std::ios::app);
   string_list args (get_all_args (argc, argv));
-  const string_list file_params (get_parameters (args));
-  float gamma;
-  if (file_params.size () > 1) {
-    gamma = get_gamma_for (file_params.front ());
-  } else {
-    gamma = 1;
-  }
-  if (gamma != 1) {
-    insert_gamma_option (gamma, args);
+  if (!has_gamma_option (args)) {
+    log << "no gamma option present.\n";
+    const string_list file_params (get_parameters (args));
+    float gamma;
+    if (file_params.size () > 1) {
+      gamma = get_gamma_for (file_params.front ());
+    } else {
+      gamma = 1;
+    }
+    if (gamma != 1) {
+      insert_gamma_option (gamma, args);
+    }
   }
   const std::string cmdline = build_command_line (args);
   log << "command: " << cmdline << '\n';
+#if defined (TEST)
+  std::cout << "EXEC: " << cmdline << '\n';
+  return 0;
+#else
   int ec = execute_tdlmake (cmdline);
   return ec;
+#endif
 }

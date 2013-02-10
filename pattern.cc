@@ -95,7 +95,7 @@ bool pattern_state::match1 (int idx, const std::string &subj) const
      * complex case: pattern contains a wildcard.
      */
     state_set state;
-    int ppos = 0, pos = 0;
+    unsigned pos = 0;
     state.insert (0);
     if (pattern[0] == '*') {
       state.insert (1);
@@ -103,15 +103,17 @@ bool pattern_state::match1 (int idx, const std::string &subj) const
     while (pos != subj.size () && !state.empty ()) {
       state_set newstate;
       state_set::const_iterator stit = state.begin ();
-      while (stit != state.end () && *stit < pattern.size ()) {
+      while (stit != state.end () && (unsigned) *stit < pattern.size ()) {
         if (pattern[*stit] == '*') {
           newstate.insert (*stit);
           newstate.insert (*stit + 1);
         } else if (pattern[*stit] == subj[pos]) {
           newstate.insert (*stit + 1);
-          if (*stit + 1 < pattern.size () && pattern[*stit + 1] == '*') {
-            newstate.insert (*stit + 2);
-          }
+          if ((unsigned) *stit + 1 < pattern.size ()
+            && pattern[*stit + 1] == '*')
+            {
+              newstate.insert (*stit + 2);
+            }
         }
         ++ stit;
       }
