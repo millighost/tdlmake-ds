@@ -175,9 +175,11 @@ static int execute_tdlmake (const std::string &cmdline)
 int main (int argc, char **argv)
 {
   sysdep_conf conf (argv[0]);
+#ifdef TEST
   std::cout << " tdlmake: " << conf.path_tdlmake << '\n'
             << "datafile: " << conf.path_datafile << '\n'
             << " logfile: " << conf.path_logfile << '\n';
+#endif
   std::ofstream log (conf.path_logfile.c_str (), std::ios::out | std::ios::app);
   string_list args (get_all_args (argc, argv));
   if (!has_gamma_option (args)) {
