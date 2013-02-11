@@ -13,15 +13,9 @@
 #include <iomanip>
 #include <sstream>
 
-/*
- * set path=%path%;v:/mingw/bin
- * g++ tdltest.cc -static-libstdc++ -static-libgcc
- * tdlmake called like this:
- * w:/dsprog45/bin/tdlmake-org.exe "-mode" "periodic"\
- *   "C:/users/rassahah/Application Data/DAZ 3D/Studio4/temp/d28.tif"\
- *   "C:/users/rassahah/Application Data/DAZ 3D/Studio4/temp/d29_d28.tdl"
+/**
+ * data type for option lists.
  */
-
 typedef std::list <std::string> string_list;
 
 /**
@@ -184,13 +178,9 @@ int main (int argc, char **argv)
   std::cout << " tdlmake: " << conf.path_tdlmake << '\n'
             << "datafile: " << conf.path_datafile << '\n'
             << " logfile: " << conf.path_logfile << '\n';
-  /*
-   * command to create and execute.
-   */
   std::ofstream log (conf.path_logfile.c_str (), std::ios::out | std::ios::app);
   string_list args (get_all_args (argc, argv));
   if (!has_gamma_option (args)) {
-    log << "no gamma option present.\n";
     const string_list file_params (get_parameters (args));
     float gamma;
     if (file_params.size () > 1) {
@@ -203,11 +193,11 @@ int main (int argc, char **argv)
     }
   }
   const std::string cmdline = build_command_line (conf.path_tdlmake, args);
-  log << "command: " << cmdline << '\n';
 #if defined (TEST)
   std::cout << "EXEC: " << cmdline << '\n';
   return 0;
 #else
+  log << "executing: " << cmdline << '\n';
   int ec = execute_tdlmake (cmdline);
   return ec;
 #endif
