@@ -27,10 +27,11 @@ typedef std::list <std::string> string_list;
 /**
  * function to determine the gamma for an image.
  */
-static float get_gamma_for (const std::string &filename)
+static float get_gamma_for
+  (const sysdep_conf &conf, const std::string &filename)
 {
   lc_path path (filename);
-  std::ifstream ifs (get_path_datafile ().c_str (), std::ios::in);
+  std::ifstream ifs (conf.path_datafile.c_str (), std::ios::in);
   char buffer[1000];
   while (ifs.getline (buffer, sizeof buffer)) {
     std::string line (buffer, ifs.gcount () - 1);
@@ -179,19 +180,21 @@ static int execute_tdlmake (const std::string &cmdline)
 
 int main (int argc, char **argv)
 {
+  sysdep_conf conf (argv[0]);
+  std::cout << " tdlmake: " << conf.path_tdlmake << '\n'
+            << "datafile: " << conf.path_datafile << '\n'
+            << " logfile: " << conf.path_logfile << '\n';
   /*
    * command to create and execute.
    */
-  std::ofstream log
-    (get_path_logfile ().c_str (), std::ios::out | std::ios::app);
-  const std::string tdlmake_path = get_path_tdlmake (argv[0]);
+  std::ofstream log (conf.path_logfile.c_str (), std::ios::out | std::ios::app);
   string_list args (get_all_args (argc, argv));
   if (!has_gamma_option (args)) {
     log << "no gamma option present.\n";
     const string_list file_params (get_parameters (args));
     float gamma;
     if (file_params.size () > 1) {
-      gamma = get_gamma_for (file_params.front ());
+      gamma = get_gamma_for (conf, file_params.front ());
     } else {
       gamma = 1;
     }
@@ -199,7 +202,7 @@ int main (int argc, char **argv)
       insert_gamma_option (gamma, args);
     }
   }
-  const std::string cmdline = build_command_line (tdlmake_path, args);
+  const std::string cmdline = build_command_line (conf.path_tdlmake, args);
   log << "command: " << cmdline << '\n';
 #if defined (TEST)
   std::cout << "EXEC: " << cmdline << '\n';
