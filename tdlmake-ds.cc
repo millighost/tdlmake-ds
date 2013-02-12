@@ -176,7 +176,9 @@ int main (int argc, char **argv)
 {
   sysdep_conf conf (argv[0]);
 #ifdef TEST
-  std::cout << " tdlmake: " << conf.path_tdlmake << '\n'
+  std::cout << "    self: " << conf.path_self << '\n'
+            << "    data: " << conf.path_data << '\n'
+            << " tdlmake: " << conf.path_tdlmake << '\n'
             << "datafile: " << conf.path_datafile << '\n'
             << " logfile: " << conf.path_logfile << '\n';
 #endif

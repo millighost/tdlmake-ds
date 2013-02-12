@@ -17,6 +17,10 @@ struct sysdep_conf
    */
   std::string path_self;
   /**
+   * path to the data directory.
+   */
+  std::string path_data;
+  /**
    * path to original tdlmake command.
    */
   std::string path_tdlmake;

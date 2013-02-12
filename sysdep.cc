@@ -8,21 +8,17 @@
 
 namespace {
 
-#if defined (WIN32)
-static const char log_filename[] = "v:/tmp/log.txt";
-#else
-static const char log_filename[] = "log.txt";
-#endif
+static const char log_filename[] = "log-tdlmake.txt";
 
-#if defined (WIN32)
 /**
- * retrieve the common documents folder.
+ * retrieve the user app data folder.
  */
-static std::string get_common_folder ()
+static std::string get_path_data ()
 {
   std::string folder_name;
+#if defined (WIN32)
   HKEY hkey;
-  if (RegOpenKeyEx (HKEY_LOCAL_MACHINE,
+  if (RegOpenKeyEx (HKEY_CURRENT_USER,
       "Software\\Microsoft\\Windows\\CurrentVersion"
       "\\Explorer\\Shell Folders\\", 0, KEY_READ, &hkey) != 0) {
     return std::string ();
@@ -31,7 +27,7 @@ static std::string get_common_folder ()
     char buffer[1000];
     DWORD buffer_size = sizeof buffer;
     DWORD type;
-    if (RegQueryValueEx (hkey, "Common Documents", 0, &type,
+    if (RegQueryValueEx (hkey, "AppData", 0, &type,
         (BYTE *) &buffer[0], &buffer_size) == 0)
       {
         folder_name.assign (buffer, buffer_size);
@@ -39,9 +35,11 @@ static std::string get_common_folder ()
       }
   }
   RegCloseKey (hkey);
+#else
+  folder_name.assign ("/");
+#endif
   return folder_name;
 }
-#endif
 
 /**
  * get the path directory of the executable.
@@ -97,23 +95,20 @@ std::string get_path_tdlmake (const std::string &self)
 /**
  * get the configuration filename.
  */
-static std::string get_datafile (const std::string &selfdir)
+static std::string get_datafile (const std::string &datadir)
 {
-#if defined (WIN32)
-  std::string common_folder (get_common_folder ());
-  return common_folder + "gamma.txt";
-#else
-  return selfdir + "gamma.txt";
-#endif
+  return datadir + "gamma.txt";
 }
 
 } /* local namespace */
 
 #include <iostream>
+
 sysdep_conf::sysdep_conf (const std::string &argv0)
   : path_self (get_path_self (argv0)),
+    path_data (get_path_data ()),
     path_tdlmake (get_path_tdlmake (path_self)),
-    path_datafile (get_datafile (path_self)),
-    path_logfile (log_filename)
+    path_datafile (get_datafile (path_data)),
+    path_logfile (path_data + log_filename)
 {
 }
