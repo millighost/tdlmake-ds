@@ -30,7 +30,7 @@ static std::string get_path_data ()
     if (RegQueryValueEx (hkey, "AppData", 0, &type,
         (BYTE *) &buffer[0], &buffer_size) == 0)
       {
-        folder_name.assign (buffer, buffer_size);
+        folder_name.assign (buffer, buffer_size - 1);
         folder_name += '\\';
       }
   }

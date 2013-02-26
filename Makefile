@@ -8,7 +8,7 @@ else
   RM = rm
 endif
 
-CPPFLAGS = -DTEST
+# CPPFLAGS = -DTEST
 CXXFLAGS = -O -Wall
 LDFLAGS = -static-libstdc++ -static-libgcc
 

@@ -172,18 +172,28 @@ static int execute_tdlmake (const std::string &cmdline)
   return ec;
 }
 
+static void local_options (const sysdep_conf &conf, const string_list &args)
+{
+  string_list::const_iterator optit = args.begin ();
+  while (optit != args.end ()) {
+    if (optit->compare ("--show-config") == 0) {
+      std::cout << "    self: " << conf.path_self << '\n'
+                << "    data: " << conf.path_data << '\n'
+                << " tdlmake: " << conf.path_tdlmake << '\n'
+                << "datafile: " << conf.path_datafile << '\n'
+                << " logfile: " << conf.path_logfile << '\n';
+      exit (0);
+    }
+    ++ optit;
+  }
+}
+
 int main (int argc, char **argv)
 {
   sysdep_conf conf (argv[0]);
-#ifdef TEST
-  std::cout << "    self: " << conf.path_self << '\n'
-            << "    data: " << conf.path_data << '\n'
-            << " tdlmake: " << conf.path_tdlmake << '\n'
-            << "datafile: " << conf.path_datafile << '\n'
-            << " logfile: " << conf.path_logfile << '\n';
-#endif
   std::ofstream log (conf.path_logfile.c_str (), std::ios::out | std::ios::app);
   string_list args (get_all_args (argc, argv));
+  local_options (conf, args);
   if (!has_gamma_option (args)) {
     const string_list file_params (get_parameters (args));
     float gamma;
