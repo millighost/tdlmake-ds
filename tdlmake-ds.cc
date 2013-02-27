@@ -18,6 +18,7 @@
  */
 typedef std::list <std::string> string_list;
 
+
 /**
  * function to determine the gamma for an image.
  */
@@ -58,9 +59,23 @@ static bool has_gamma_option (const string_list &args)
     != args.end ();
 }
 
+/**
+ * local options.
+ */
+struct options {
+  options ();
+  bool test_only;
+  bool show_config;
+};
+options::options ()
+  : test_only (false),
+    show_config (false)
+{
+}
+
 struct argument_count_rec {
-  const char *arg;
-  int count;
+  const char *arg; /* option string */
+  int count; /* number of parameters */
 };
 static const argument_count_rec argument_counts[] = {
   { "-skymap", 1 },
@@ -99,20 +114,6 @@ static int get_number_of_arguments (const std::string &opt)
     }
   }
   return 0;
-}
-
-/**
- * convert the argc/argv list into a string list.
- */
-static string_list get_all_args (int argc, char **argv)
-{
-  string_list args;
-  int opti = 1;
-  while (opti < argc) {
-    args.push_back (argv[opti]);
-    ++ opti;
-  }
-  return args;
 }
 
 /**
@@ -172,19 +173,31 @@ static int execute_tdlmake (const std::string &cmdline)
   return ec;
 }
 
-static void local_options (const sysdep_conf &conf, const string_list &args)
+/**
+ * parse the command line arguments into local options and a list of strings.
+ */
+static void parse_command_line
+  (int argc, char **argv, options &opts, string_list &args)
 {
-  string_list::const_iterator optit = args.begin ();
-  while (optit != args.end ()) {
-    if (optit->compare ("--show-config") == 0) {
-      std::cout << "    self: " << conf.path_self << '\n'
-                << "    data: " << conf.path_data << '\n'
-                << " tdlmake: " << conf.path_tdlmake << '\n'
-                << "datafile: " << conf.path_datafile << '\n'
-                << " logfile: " << conf.path_logfile << '\n';
-      exit (0);
+  args.clear ();
+  int opti = 1;
+  int skip = 0;
+  while (opti < argc) {
+    std::string arg (argv[opti]);
+    if (skip == 0) {
+      if (arg == "--test-only") {
+        opts.test_only = true;
+      } else if (arg == "--show-config") {
+        opts.show_config = true;
+      } else {
+        args.push_back (arg);
+        skip = get_number_of_arguments (arg);
+      }
+    } else {
+      args.push_back (arg);
+      skip -= 1;
     }
-    ++ optit;
+    ++ opti;
   }
 }
 
@@ -192,8 +205,17 @@ int main (int argc, char **argv)
 {
   sysdep_conf conf (argv[0]);
   std::ofstream log (conf.path_logfile.c_str (), std::ios::out | std::ios::app);
-  string_list args (get_all_args (argc, argv));
-  local_options (conf, args);
+  options opts;
+  string_list args;
+  parse_command_line (argc, argv, opts, args);
+  if (opts.show_config) {
+    std::cout << "    self: " << conf.path_self << '\n'
+              << "    data: " << conf.path_data << '\n'
+              << " tdlmake: " << conf.path_tdlmake << '\n'
+              << "datafile: " << conf.path_datafile << '\n'
+              << " logfile: " << conf.path_logfile << '\n';
+    return 0;
+  }
   if (!has_gamma_option (args)) {
     const string_list file_params (get_parameters (args));
     float gamma;
@@ -207,12 +229,12 @@ int main (int argc, char **argv)
     }
   }
   const std::string cmdline = build_command_line (conf.path_tdlmake, args);
-#if defined (TEST)
-  std::cout << "EXEC: " << cmdline << '\n';
-  return 0;
-#else
-  log << "executing: " << cmdline << '\n';
-  int ec = execute_tdlmake (cmdline);
+  int ec;
+  if (opts.test_only) {
+    std::cout << "EXEC: " << cmdline << '\n';
+    ec = 0;
+  } else {
+    ec = execute_tdlmake (cmdline);
+  }
   return ec;
-#endif
 }

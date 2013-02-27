@@ -31,6 +31,7 @@ struct pattern_state
   void init_state (state_set &state) const;
   /**
    * shift a path component.
+   * pos is the current position in the components.
    * return true, iff the beginning of the pattern was shifted.
    */
   bool shift (int pos, const std::string &subj, state_set &state) const;

@@ -61,6 +61,7 @@ bool lc_path::match (const std::string &patterns) const
   pattern.init_state (state);
   int pos = m_comp.size () - 1;
   while (pos >= 0 && !state.empty ()) {
+    std::cout << "state: " << state << '\n';
     state_set::const_iterator stit = state.begin ();
     while (stit != state.end ()) {
       if (pattern.shift (*stit, m_comp[pos], newstate)) {
@@ -90,6 +91,7 @@ void pattern_state::init_state (state_set &state) const
 bool pattern_state::match1 (int idx, const std::string &subj) const
 {
   const std::string &pattern = m_comp[idx];
+  bool result;
   if (pattern.find ('*') != pattern.npos) {
     /*
      * complex case: pattern contains a wildcard.
@@ -121,14 +123,15 @@ bool pattern_state::match1 (int idx, const std::string &subj) const
       newstate.swap (state);
       newstate.clear ();
     }
-    return state.find (pattern.size ()) != state.end ();
+    result = state.find (pattern.size ()) != state.end ();
   } else {
     /*
      * simple case: no wildcard; do normal string match.
      */
-    return pattern.size () == subj.size ()
+    result = pattern.size () == subj.size ()
       && pattern == subj;
   }
+  return result;
 }
 
 bool pattern_state::shift
@@ -139,6 +142,13 @@ bool pattern_state::shift
       return true;
     } else {
       state.insert (ppos - 1);
+      if (m_comp[ppos - 1].empty ()) {
+        if (ppos - 1 == 0) {
+          return true;
+        } else {
+          state.insert (ppos - 2);
+        }
+      }
     }
   } else if (m_comp[ppos].empty ()) {
     state.insert (ppos);
