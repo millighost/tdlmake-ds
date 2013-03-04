@@ -234,6 +234,7 @@ int main (int argc, char **argv)
     std::cout << "EXEC: " << cmdline << '\n';
     ec = 0;
   } else {
+    log << "EXEC: " << cmdline << '\n';
     ec = execute_tdlmake (cmdline);
   }
   return ec;

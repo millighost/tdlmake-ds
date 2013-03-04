@@ -1,4 +1,5 @@
 #include "sysdep.hh"
+#include <iostream>
 
 #if defined (WIN32)
 #  include <windows.h>
@@ -66,7 +67,9 @@ static std::string get_path_self (const std::string &argv0)
     int size = GetModuleFileName (0, buffer, sizeof buffer);
     if (size > 0) {
       std::string exec_name (buffer);
-      return exec_name.substr (0, exec_name.find ('\\') + 1);
+      std::string exec_dirname
+        (exec_name.substr (0, exec_name.rfind ('\\') + 1));
+      return exec_dirname;
     }
   }
 #else
@@ -77,7 +80,7 @@ static std::string get_path_self (const std::string &argv0)
     char buffer[1000];
     ssize_t link_size = readlink ("/proc/self/exe", buffer, sizeof buffer);
     std::string exec_name (buffer, link_size);
-    return exec_name.substr (0, exec_name.find ('/') + 1);
+    return exec_name.substr (0, exec_name.rfind ('/') + 1);
   }
 #endif
   return ".";

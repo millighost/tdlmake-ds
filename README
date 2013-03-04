@@ -20,3 +20,4 @@ How to install/use it:
     by a pattern that matches an image filename. Examples below.
   - simply use tdlmake normally (this calls the wrapper, which in turn calls
     the original tdlmake after looking into the gamma.txt)
+
