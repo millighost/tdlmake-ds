@@ -4,9 +4,9 @@ tdlmake-ds
 wrapper for tdlmake be used with daz studio.
 
 What it does:
-  - the usage behaviuor is like tdlmake
+  - the usage behaviour is like tdlmake
   - looks up a gamma value to be used with the input image
-  - calls tdlmake with a '-gamma' option
+  - calls tdlmake with an appropriate '-gamma' option
 
 How to install/use it:
   in the 3delight binary directory:
@@ -14,10 +14,32 @@ How to install/use it:
   - rename tdlmake-ds.exe to tdlmake.exe and put it into the same folder
     (so it replaces the old tdlmake)
   - create a configuration file named "gamma.txt" in your application data
-    directory (in windows this is usually C:\users\NAME\Application Data).
+    directory (in windows this is usually C:\users\NAME\Application Data,
+    with NAME being your username).
   - write gamma values for images into the gamma.txt file. This file uses
     a simple two-column format. Each line contains a gamma value followed
     by a pattern that matches an image filename. Examples below.
   - simply use tdlmake normally (this calls the wrapper, which in turn calls
     the original tdlmake after looking into the gamma.txt)
 
+Configuration file syntax:
+
+In the users application data directory the configuration file 'gamma.txt' is
+used. It is a simple line-oriented format. Each line contains the definition
+of a gamma value for one or more image files. A line looks like this:
+
+  <gamma-value>  <texture-filename>
+
+<gamma-value> is a value to be used for the gamma. Typical values are
+  1.0 and 2.2.
+
+<texture-filename> contains the filename of an image texture. Use the
+  filename of the original texture here. I.e. use name the JPG or TIF here,
+  not the name of the TDL-file.
+  
+
+Any line not conforming to this format is currently silently ignored
+by the wrapper. To avoid future conflicts, use lines starting with two dashes
+as a comment-line:
+
+  -- this is a comment line.
