@@ -26,7 +26,16 @@ Configuration file syntax:
 
 In the users application data directory the configuration file 'gamma.txt' is
 used. It is a simple line-oriented format. Each line contains the definition
-of a gamma value for one or more image files. A line looks like this:
+of a gamma value for one or more image files or a comment.
+
+Any line not conforming to this format is currently silently ignored
+by the wrapper. To avoid future conflicts, use lines starting with two dashes
+as a comment-line:
+
+  -- this is a comment line.
+
+Lines that are not comment lines contain a gamma value and a filename of a
+texture, separated by whitespace:
 
   <gamma-value>  <texture-filename>
 
@@ -36,10 +45,81 @@ of a gamma value for one or more image files. A line looks like this:
 <texture-filename> contains the filename of an image texture. Use the
   filename of the original texture here. I.e. use name the JPG or TIF here,
   not the name of the TDL-file.
+
+* A simple example:
+
+    1.0 TrousersTransmap.jpg
+
+  this would lead to the texture TrousersTransmap.jpg to being converted with
+  a gamma value of 1. Note that the directory name does not matter in this
+  case, i.e. both of the texture files
+
+    C:\mytextures\TrousersTransmap.jpg and
+    C:\downloaded\cgtextures\TrousersTransmap.jpg
+
+  would be used with a gamma value of 1.
+
+* It is possible to use an
+  asterisk (*) to assign a gamma value to a set of texture filenames
+  matching the pattern. Example:
+
+    1.0 *Bump.jpg
+
+  would use the gamma value 1.0 on every texture which name ends with 'bump.jpg'.
+  The matching is always without attention to the upper-/lowercase, the
+  following two texture names would get a gamma of 1.0:
+
+    C:\mytextures\TrousersBump.jpg
+    C:\mytextures\jumper_bump.jpg
+
+  but also this one:
+
+    C:\mytextures\albumA-Z\AlbumP.jpg
+
+  which might not be what is wanted, so a bit of caution has to be applied
+  when using patterns.
   
+* Image patterns might contain directory names in addition to the image name:
 
-Any line not conforming to this format is currently silently ignored
-by the wrapper. To avoid future conflicts, use lines starting with two dashes
-as a comment-line:
+    2.2 mytextures/color.jpg
 
-  -- this is a comment line.
+  Those paths are matched against the trailing part of the actual texture
+  filename, so this would apply to
+
+    C:\mytextures\color.jpg and
+    C:\data\mytextures\color.jpg
+
+  but not to:
+
+    C:\mytextures\clothing\color.jpg
+
+  because there is a 'clothing' between the 'mytextures' and the 'color'.
+  Note in the pattern 'mytextures/color.jpg' i used a forward slash '/',
+  where in windows usually a backward slash '\' is used. Those two slashes
+  are equivalent in patterns, so 'mytextures/color.jpg' and
+  'mytextures\color.jpg' represent exactly the same filenames.
+
+* To ignore intermediate directories in patterns, a double slash can be used
+  as a wildcard:
+
+    2.2 mytextures//color.jpg
+
+  This would work with both the previous example filenames.
+
+    C:\mytextures\clothing\color.jpg and
+    C:\mytextures\color.jpg
+
+  so the double-slash '//' matches any sequence of directory names (even the
+  empty sequence of names). If i wanted to match only the
+  'C:\mytextures\clothing\color.jpg' but not 'C:\mytextures\color.jpg' the
+  double-slash would not work, but i can use an asterisk to do that:
+
+    2.2 mytextures/*/color.jpg
+
+  matches
+
+    C:\mytextures\clothing\color.jpg
+
+  but not
+
+    C:\mytextures\color.jpg
