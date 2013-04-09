@@ -13,11 +13,12 @@
 #include <iomanip>
 #include <sstream>
 
+#define VERSION_STR "1.0.0"
+
 /**
  * data type for option lists.
  */
 typedef std::list <std::string> string_list;
-
 
 /**
  * function to determine the gamma for an image.
@@ -66,10 +67,12 @@ struct options {
   options ();
   bool test_only;
   bool show_config;
+  bool show_version;
 };
 options::options ()
   : test_only (false),
-    show_config (false)
+    show_config (false),
+    show_version (false)
 {
 }
 
@@ -189,6 +192,8 @@ static void parse_command_line
         opts.test_only = true;
       } else if (arg == "--show-config") {
         opts.show_config = true;
+      } else if (arg == "--show-version") {
+        opts.show_version = true;
       } else {
         args.push_back (arg);
         skip = get_number_of_arguments (arg);
@@ -214,6 +219,9 @@ int main (int argc, char **argv)
               << " tdlmake: " << conf.path_tdlmake << '\n'
               << "datafile: " << conf.path_datafile << '\n'
               << " logfile: " << conf.path_logfile << '\n';
+    return 0;
+  } else if (opts.show_version) {
+    std::cout << VERSION_STR << '\n';
     return 0;
   }
   if (!has_gamma_option (args)) {
